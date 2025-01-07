@@ -3,7 +3,7 @@ import winston from 'winston';
 import callsites from 'callsites';
 import { inspect } from 'util';
 import { basename } from 'path';
-
+import { RequestContext } from '@/context/RequestContext';
 import { LoggerProxy, type IDataObject, LOG_LEVELS } from 'n8n-workflow';
 
 import config from '@/config';
@@ -35,23 +35,19 @@ export class Logger {
 			.map((line) => line.trim());
 
 		if (output.includes('console')) {
-			let format: winston.Logform.Format;
-			if (['debug', 'verbose'].includes(level)) {
-				format = winston.format.combine(
-					winston.format.metadata(),
-					winston.format.timestamp(),
-					winston.format.colorize({ all: true }),
+			const format: winston.Logform.Format = winston.format.combine(
+				winston.format.metadata(),
+				winston.format.timestamp(),
+				winston.format.colorize({all: true}),
 
-					winston.format.printf(({ level: logLevel, message, timestamp, metadata }) => {
-						return `${timestamp} | ${logLevel.padEnd(18)} | ${message}${
-							// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-							Object.keys(metadata).length ? ` ${JSON.stringify(inspect(metadata))}` : ''
-						}`;
-					}),
-				);
-			} else {
-				format = winston.format.printf(({ message }: { message: string }) => message);
-			}
+				winston.format.printf(({level: logLevel, message, timestamp, metadata}) => {
+					const requestId: string = RequestContext.getRequestId();
+					return `${timestamp} | ${logLevel.padEnd(18)} | ${requestId} | ${message}${
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+						Object.keys(metadata).length ? ` ${JSON.stringify(inspect(metadata))}` : ''
+					}`;
+				}),
+			);
 
 			this.logger.add(
 				new winston.transports.Console({

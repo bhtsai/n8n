@@ -12,7 +12,7 @@ import * as Db from '@/Db';
 import { N8nInstanceType } from '@/Interfaces';
 import { ExternalHooks } from '@/ExternalHooks';
 import { send, sendErrorResponse } from '@/ResponseHelper';
-import { rawBodyReader, bodyParser, corsMiddleware } from '@/middlewares';
+import { rawBodyReader, bodyParser, corsMiddleware, requestLoggerMiddleware } from '@/middlewares';
 import { TestWebhooks } from '@/TestWebhooks';
 import { WaitingForms } from '@/WaitingForms';
 import { WaitingWebhooks } from '@/WaitingWebhooks';
@@ -109,6 +109,9 @@ export abstract class AbstractServer {
 
 		// Read incoming data into `rawBody`
 		this.app.use(rawBodyReader);
+
+		// Logging request and response
+		this.app.use(requestLoggerMiddleware);
 	}
 
 	private setupDevMiddlewares() {
