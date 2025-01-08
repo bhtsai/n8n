@@ -3,15 +3,19 @@ import {RequestHandler} from 'express';
 import {RequestContext} from '@/context/RequestContext';
 import {Container} from 'typedi';
 import {Logger} from '@/Logger';
+import type {AuthenticatedRequest} from "@/requests";
 
-export const requestLoggerMiddleware: RequestHandler = (req, res, next) => {
+export const requestLoggerMiddleware: RequestHandler = (req: AuthenticatedRequest, res, next) => {
 	const requestId = uuid();
 	const requestStartTime = Date.now();
+	if (req.originalUrl !== '/rest/cta/become-creator')
+		return next();
 
 	// store requestId in RequestContext
 	RequestContext.run(requestId, () => {
 		const logger = Container.get(Logger);
-		logger.info(`Incoming request: ${req.method} ${req.originalUrl}`);
+		console.log(req?.user)
+		logger.info(`Incoming request: ${req.method} ${req.originalUrl}, requester=${req?.user?.email}`);
 
 		res.on('finish', () => {
 			const requestEndTime = Date.now();

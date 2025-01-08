@@ -67,6 +67,7 @@ import '@/license/license.controller';
 import '@/workflows/workflowHistory/workflowHistory.controller.ee';
 import '@/workflows/workflows.controller';
 import { AuditEventRelay } from './eventbus/audit-event-relay.service';
+import {requestLoggerMiddleware} from "@/middlewares";
 
 const exec = promisify(callbackExec);
 
@@ -207,8 +208,12 @@ export class Server extends AbstractServer {
 		// Parse cookies for easier access
 		this.app.use(cookieParser());
 
+		// Setup auth middleware
 		const { restEndpoint, app } = this;
 		setupPushHandler(restEndpoint, app);
+
+		// Logging request and response
+		this.app.use(requestLoggerMiddleware);
 
 		if (config.getEnv('executions.mode') === 'queue') {
 			const { Queue } = await import('@/Queue');

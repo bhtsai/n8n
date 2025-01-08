@@ -62,6 +62,8 @@ export class AuthService {
 	}
 
 	async authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+		if (req.originalUrl === '/rest/cta/become-creator')
+			console.log('auth');
 		const token = req.cookies[AUTH_COOKIE_NAME];
 		if (token) {
 			try {
